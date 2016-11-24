@@ -148,7 +148,7 @@ def get_dns_reply(data):
 	
 	#flags field
 	ti = from_short(flags)
-	ti |= 0x8080 #adds answer and recursion ok bit
+	ti |= 0x8400 #adds answer, auth bit
 	pkt.append(to_short(ti))
 
 	#questions answers auth servers
