@@ -188,14 +188,22 @@ sock.bind(("::", 53))
 
 while True:
 	data, address = sock.recvfrom(0XFFFF)
-	if not os.fork():
-		#drop privileges
-		try:
-		    os.setgid(ids.pw_gid)
-		    os.setuid(ids.pw_uid)
-		except:
-		    exit() #no lesser priviliges no page
+	if os.fork(): #parent waits for 1st child
+		os.wait()
 
-		reply = get_dns_reply(data)
-		if reply: sock.sendto(reply, address)
+	else: #child
+		if os.fork():
+			exit() #gets cleaned by root process
+		else: #grandchild
+			#drop privileges
+			try:
+			    os.setgid(ids.pw_gid)
+			    os.setuid(ids.pw_uid)
+			except:
+			    exit() #no lesser priviliges no page
+
+			reply = get_dns_reply(data)
+			if reply: sock.sendto(reply, address)
+			exit()
+
 		exit()
