@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 #dnsecho
 #Copyright (C) 2019  Bram Staps
@@ -20,6 +20,7 @@ import pwd
 import socket
 import struct
 import os
+import sys
 import time
 import datetime
 
@@ -148,10 +149,10 @@ def handle(data, address):
 	except KeyError:
 		t = record_type
 
- 	try:
-                c = dns_classes[record_class]
-        except KeyError:
-                c = record_type
+	try:
+		c = dns_classes[record_class]
+	except KeyError:
+		c = record_type
 
 	n = ".".join(name)
 
@@ -162,8 +163,31 @@ def handle(data, address):
 
 	d = datetime.datetime.now()
 	print d, ip, c, t, n
+	if path:
+		parts = n.split(".")
+		parts.reverse()
+		partsum = []
+		for part in parts:
+			partsum.append(part)
+			p = os.path.join(path,*tuple(partsum))
+			try:
+				os.mkdir(p)
+			except:
+				pass
+		partsum.append(str(time.time())+".txt")
+		p = os.path.join(path,*tuple(partsum))
+		with open(p, "w") as f: f.write("{} {} {} {} {}".format(d, ip, c, t, n))
+
 
 #main starts here
+path = None
+if len(sys.argv) == 2:
+	path = sys.argv[1]
+	try:
+		os.mkdir(path)
+	except: 
+		pass
+
 sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 sock.bind(("::", 53))
 
