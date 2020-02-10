@@ -168,13 +168,14 @@ def handle(data, address):
 		parts.reverse()
 		partsum = []
 		for part in parts:
+			part = part.lower() #We log case insensitive, but since dns names are semantically case insessitive we lower here.
 			partsum.append(part)
 			p = os.path.join(path,*tuple(partsum))
 			try:
 				os.mkdir(p)
 			except:
 				pass
-		partsum.append(str(time.time())+".txt")
+		partsum.append("{:0>26.6f}.txt".format(time.time()))
 		p = os.path.join(path,*tuple(partsum))
 		with open(p, "w") as f: f.write("{} {} {} {} {}".format(d, ip, c, t, n))
 
@@ -187,6 +188,10 @@ if len(sys.argv) == 2:
 		os.mkdir(path)
 	except: 
 		pass
+
+if path:
+    os.chroot(path)
+    path = "/"
 
 sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 sock.bind(("::", 53))
